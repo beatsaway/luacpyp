@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Build your corrosion song</title>
+  <style>
+    :root {
+      --ink: #1c2430;
+      --muted: #4d5968;
+      --paper: #f3ecdf;
+      --card: #fffaf3;
+      --rust: #c85a2e;
+      --rust-soft: #ffe3c4;
+      --teal: #1f6f78;
+      --line: #1c2430;
+      --shadow: 6px 6px 0 var(--line);
+      --danger: #8d2b2b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 8%, #ffe7c8 0 18%, transparent 19%),
+        radial-gradient(circle at 90% 0%, #d7eef0 0 22%, transparent 23%),
+        var(--paper);
+      font-family: "Avenir Next", "Segoe UI", "Trebuchet MS", sans-serif;
+      line-height: 1.4;
+    }
+
+    .wrap {
+      width: min(980px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 22px 0 36px;
+    }
+
+    header.top {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      margin-bottom: 16px;
+    }
+
+    .brand {
+      margin: 0;
+      font-size: 0.95rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--teal);
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 2px 0 0;
+      font-size: clamp(1.8rem, 3vw, 2.5rem);
+      line-height: 1.05;
+    }
+
+    .progress {
+      min-width: 148px;
+      text-align: right;
+      font-weight: 700;
+    }
+
+    .dots {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .dots span {
+      width: 14px;
+      height: 14px;
+      border: 3px solid var(--line);
+      border-radius: 50%;
+      background: var(--card);
+    }
+
+    .dots span.on { background: var(--rust); }
+    .dots span.done { background: var(--teal); }
+
+    .panel {
+      background: var(--card);
+      border: 4px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .stage {
+      display: grid;
+      gap: 18px;
+    }
+
+    @media (min-width: 760px) {
+      .stage { grid-template-columns: 300px 1fr; align-items: start; }
+      .welcome-stage { grid-template-columns: 1.1fr 0.9fr; }
+    }
+
+    .plate {
+      border: 4px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
+      background: #d7eef0;
+      box-shadow: 4px 4px 0 var(--line);
+    }
+
+    .plate img {
+      display: block;
+      width: 100%;
+      height: 230px;
+      object-fit: contain;
+      background: #fff6ea;
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      font-size: clamp(1.45rem, 2.4vw, 1.9rem);
+      line-height: 1.15;
+    }
+
+    p { margin: 0 0 12px; }
+
+    .lede { font-size: 1.15rem; }
+
+    .hint, .count {
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .choices {
+      display: grid;
+      gap: 10px;
+      margin: 12px 0;
+    }
+
+    .choice {
+      width: 100%;
+      text-align: left;
+      font: inherit;
+      font-size: 1.12rem;
+      color: var(--ink);
+      background: var(--card);
+      border: 3px solid var(--line);
+      border-radius: 14px;
+      box-shadow: 4px 4px 0 var(--line);
+      padding: 12px 14px;
+      cursor: pointer;
+    }
+
+    .choice:hover { background: #fff4e8; }
+
+    .choice[aria-pressed="true"] {
+      background: var(--rust-soft);
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 var(--line);
+    }
+
+    .choice:focus-visible, .btn:focus-visible, input:focus-visible, textarea:focus-visible {
+      outline: 3px solid var(--teal);
+      outline-offset: 2px;
+    }
+
+    label.field {
+      display: block;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      margin-top: 6px;
+      padding: 12px 14px;
+      font: inherit;
+      font-size: 1.08rem;
+      color: var(--ink);
+      background: #fff;
+      border: 3px solid var(--line);
+      border-radius: 12px;
+    }
+
+    textarea {
+      min-height: 280px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+
+    .alert {
+      min-height: 1.3em;
+      margin: 8px 0 0;
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 14px;
+      position: sticky;
+      bottom: 0;
+      padding: 12px 0 4px;
+      background: linear-gradient(to top, var(--card) 70%, transparent);
+    }
+
+    .btn {
+      font: inherit;
+      font-size: 1.12rem;
+      font-weight: 700;
+      border: 3px solid var(--line);
+      border-radius: 999px;
+      padding: 12px 18px;
+      cursor: pointer;
+      box-shadow: 4px 4px 0 var(--line);
+      background: var(--card);
+      color: var(--ink);
+    }
+
+    .btn:hover { transform: translate(1px, 1px); box-shadow: 3px 3px 0 var(--line); }
+
+    .btn.primary {
+      background: var(--rust);
+      color: #fffaf3;
+    }
+
+    .btn.teal { background: var(--teal); color: #fffaf3; }
+
+    .summary {
+      background: #e7f4f5;
+      border: 3px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+    }
+
+    .summary ul { margin: 8px 0 0; padding-left: 1.2rem; }
+
+    .callout {
+      background: var(--rust-soft);
+      border: 3px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 14px;
+      margin: 12px 0;
+      font-size: 1.12rem;
+      font-weight: 700;
+    }
+
+    .copied { color: var(--teal); font-weight: 700; min-height: 1.3em; }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <p class="brand">Science song lab</p>
+        <h1>Build your corrosion song</h1>
+      </div>
+      <div class="progress" id="progress" hidden>
+        <div id="progress-label">Question 1 of 5</div>
+        <div class="dots" id="dots" aria-hidden="true"></div>
+      </div>
+    </header>
+
+    <main class="panel" id="app">
+      <section id="screen-welcome">
+        <div class="stage welcome-stage">
+          <div>
+            <h2>Five questions. Then your prompt.</h2>
+            <p class="lede">You are going to plan a song about corrosion. Rust on iron is the kind of corrosion in this lesson.</p>
+            <p>Answer one question at a time. You can tap an answer, or type your own words.</p>
+            <p>At the end you will get a prompt. Copy it. Paste it into Suno AI later, when your teacher says it is time.</p>
+            <div class="actions">
+              <span></span>
+              <button class="btn primary" id="start-btn" type="button">Start</button>
+            </div>
+          </div>
+          <figure class="plate">
+            <img src="images/cover.png" alt="A cartoon child in a lab coat beside a rover. One wheel is shiny and one wheel is rusty.">
+          </figure>
+        </div>
+      </section>
+
+      <section id="screen-question" class="hidden">
+        <div class="stage">
+          <figure class="plate">
+            <img id="q-image" alt="">
+          </figure>
+          <div>
+            <h2 id="q-title"></h2>
+            <p class="lede" id="q-help"></p>
+            <p class="count" id="q-count"></p>
+            <div class="choices" id="q-choices"></div>
+            <label class="field" id="q-label" for="q-own"></label>
+            <input id="q-own" type="text" autocomplete="off">
+            <p class="hint" id="q-own-hint"></p>
+            <p class="alert" id="q-alert" role="alert"></p>
+            <div class="actions">
+              <button class="btn" id="back-btn" type="button">Back</button>
+              <button class="btn primary" id="next-btn" type="button">Next</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="screen-final" class="hidden">
+        <div class="stage">
+          <figure class="plate">
+            <img src="images/finale.png" alt="A cartoon child holds a blank scroll while musical notes fly toward a computer with headphones.">
+          </figure>
+          <div>
+            <h2>Your Suno prompt is ready</h2>
+            <div class="summary" id="summary"></div>
+            <label class="field" for="song-title">Song name. You can change it.</label>
+            <input id="song-title" type="text" autocomplete="off">
+            <div class="callout">Copy this whole prompt. Paste it into Suno AI later. Wait until your teacher tells you to.</div>
+            <label class="field" for="prompt-box">Prompt</label>
+            <textarea id="prompt-box" readonly></textarea>
+            <div class="actions">
+              <button class="btn" id="final-back" type="button">Back</button>
+              <button class="btn teal" id="copy-btn" type="button">Copy prompt</button>
+            </div>
+            <p class="copied" id="copied" role="status"></p>
+            <button class="btn" id="restart-btn" type="button">Start again</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        id: "facts",
+        title: "What 3 things about corrosion do you want in your song?",
+        help: "Tick 3 facts. If you write your own fact, it counts as one of the three.",
+        image: "images/facts.png",
+        alt: "A rusty iron nail, a water drop, and a swirl of air.",
+        mode: "multi",
+        need: 3,
+        ownLabel: "Or write one fact in your own words",
+        ownHint: "Leave this empty if your three ticks are enough.",
+        options: [
+          { id: "orange", text: "Rust is corrosion of iron, and it looks orange-brown." },
+          { id: "water-air", text: "Iron rusts when water and air both touch it." },
+          { id: "chemical", text: "Rusting is a chemical change. It makes new matter, and you cannot easily undo it." },
+          { id: "salt", text: "Salt water makes iron rust faster." },
+          { id: "paint", text: "Paint or oil can slow rust by keeping water and air off the metal." },
+          { id: "rover", text: "A rover's iron parts can rust if water and air reach them." }
+        ]
+      },
+      {
+        id: "speed",
+        title: "How fast do you want your song to be?",
+        help: "Pick one speed, or type your own.",
+        image: "images/speed.png",
+        alt: "A turtle with a drum, a child clapping, and a small rocket with music notes.",
+        mode: "single",
+        ownLabel: "Or describe the speed yourself",
+        ownHint: "If you type here, your words are the ones we use.",
+        options: [
+          { id: "slow", text: "Slow and calm" },
+          { id: "medium", text: "Medium and steady" },
+          { id: "fast", text: "Fast and bouncy" }
+        ]
+      },
+      {
+        id: "instruments",
+        title: "What instruments do you want in your song?",
+        help: "Pick 1, 2, or 3 instruments. A typed answer counts as one choice.",
+        image: "images/instruments.png",
+        alt: "Cartoon ukulele, drum, piano, trumpet, and xylophone.",
+        mode: "multi",
+        need: 3,
+        min: 1,
+        ownLabel: "Or type an instrument of your own",
+        ownHint: "You can write more than one, like violin and flute.",
+        options: [
+          { id: "ukulele", text: "Ukulele" },
+          { id: "drums", text: "Drums" },
+          { id: "piano", text: "Piano" },
+          { id: "trumpet", text: "Trumpet" },
+          { id: "xylophone", text: "Xylophone" },
+          { id: "guitar", text: "Guitar" }
+        ]
+      },
+      {
+        id: "voice",
+        title: "What kind of voice do you want in your song?",
+        help: "Pick one voice, or type your own.",
+        image: "images/voice.png",
+        alt: "Cartoon children and a storyteller sharing a microphone.",
+        mode: "single",
+        ownLabel: "Or describe the voice yourself",
+        ownHint: "If you type here, your words are the ones we use.",
+        options: [
+          { id: "choir", text: "A children's choir" },
+          { id: "solo", text: "One clear singer" },
+          { id: "pop", text: "A bright pop voice" },
+          { id: "story", text: "A gentle storytelling voice" }
+        ]
+      },
+      {
+        id: "style",
+        title: "What style of music do you want?",
+        help: "Pick one style, or type your own.",
+        image: "images/style.png",
+        alt: "A cartoon music stage with balloons, stars, and musical notes.",
+        mode: "single",
+        ownLabel: "Or describe the style yourself",
+        ownHint: "If you type here, your words are the ones we use.",
+        options: [
+          { id: "pop", text: "Happy science pop" },
+          { id: "space", text: "A curious space adventure" },
+          { id: "silly", text: "Silly and fun" },
+          { id: "calm", text: "Calm and thoughtful" }
+        ]
+      }
+    ];
+
+    const state = loadState();
+    let step = state.step || 0;
+
+    const welcome = document.getElementById("screen-welcome");
+    const questionScreen = document.getElementById("screen-question");
+    const finalScreen = document.getElementById("screen-final");
+    const progress = document.getElementById("progress");
+    const progressLabel = document.getElementById("progress-label");
+    const dots = document.getElementById("dots");
+    const qImage = document.getElementById("q-image");
+    const qTitle = document.getElementById("q-title");
+    const qHelp = document.getElementById("q-help");
+    const qCount = document.getElementById("q-count");
+    const qChoices = document.getElementById("q-choices");
+    const qLabel = document.getElementById("q-label");
+    const qOwn = document.getElementById("q-own");
+    const qOwnHint = document.getElementById("q-own-hint");
+    const qAlert = document.getElementById("q-alert");
+    const nextBtn = document.getElementById("next-btn");
+
+    questions.forEach(() => {
+      const dot = document.createElement("span");
+      dots.appendChild(dot);
+    });
+
+    document.getElementById("start-btn").addEventListener("click", () => show(1));
+    document.getElementById("back-btn").addEventListener("click", () => show(step - 1));
+    nextBtn.addEventListener("click", onNext);
+    qOwn.addEventListener("input", () => {
+      state.own[questions[step - 1].id] = qOwn.value;
+      refreshCount();
+      saveState();
+    });
+    document.getElementById("final-back").addEventListener("click", () => show(questions.length));
+    document.getElementById("song-title").addEventListener("input", (event) => {
+      state.title = event.target.value;
+      renderPrompt();
+      saveState();
+    });
+    document.getElementById("copy-btn").addEventListener("click", copyPrompt);
+    document.getElementById("restart-btn").addEventListener("click", () => {
+      sessionStorage.removeItem("corrosion-song");
+      state.picks = {};
+      state.own = {};
+      state.title = "Rust and the Rover";
+      questions.forEach((q) => {
+        state.picks[q.id] = [];
+        state.own[q.id] = "";
+      });
+      show(0);
+    });
+
+    show(step);
+
+    function loadState() {
+      const blank = { step: 0, picks: {}, own: {}, title: "Rust and the Rover" };
+      questions.forEach((q) => {
+        blank.picks[q.id] = [];
+        blank.own[q.id] = "";
+      });
+      try {
+        const saved = JSON.parse(sessionStorage.getItem("corrosion-song") || "null");
+        if (!saved) return blank;
+        return {
+          step: saved.step || 0,
+          picks: { ...blank.picks, ...(saved.picks || {}) },
+          own: { ...blank.own, ...(saved.own || {}) },
+          title: saved.title || blank.title
+        };
+      } catch (error) {
+        return blank;
+      }
+    }
+
+    function saveState() {
+      state.step = step;
+      sessionStorage.setItem("corrosion-song", JSON.stringify(state));
+    }
+
+    function show(nextStep) {
+      step = nextStep;
+      qAlert.textContent = "";
+      welcome.classList.toggle("hidden", step !== 0);
+      questionScreen.classList.toggle("hidden", step < 1 || step > questions.length);
+      finalScreen.classList.toggle("hidden", step !== questions.length + 1);
+      progress.hidden = step < 1 || step > questions.length;
+      if (step >= 1 && step <= questions.length) renderQuestion();
+      if (step === questions.length + 1) {
+        document.getElementById("song-title").value = state.title;
+        renderPrompt();
+      }
+      saveState();
+      window.scrollTo(0, 0);
+    }
+
+    function renderQuestion() {
+      const q = questions[step - 1];
+      progressLabel.textContent = "Question " + step + " of " + questions.length;
+      Array.from(dots.children).forEach((dot, index) => {
+        dot.classList.toggle("on", index === step - 1);
+        dot.classList.toggle("done", index < step - 1);
+      });
+      qImage.src = q.image;
+      qImage.alt = q.alt;
+      qTitle.textContent = q.title;
+      qHelp.textContent = q.help;
+      qLabel.textContent = q.ownLabel;
+      qOwnHint.textContent = q.ownHint;
+      qOwn.value = state.own[q.id] || "";
+      nextBtn.textContent = step === questions.length ? "Make my prompt" : "Next";
+      qChoices.innerHTML = "";
+      q.options.forEach((option) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "choice";
+        button.textContent = option.text;
+        const selected = state.picks[q.id].includes(option.id);
+        button.setAttribute("aria-pressed", selected ? "true" : "false");
+        button.addEventListener("click", () => toggle(q, option.id));
+        qChoices.appendChild(button);
+      });
+      refreshCount();
+    }
+
+    function toggle(q, id) {
+      const picks = state.picks[q.id];
+      const index = picks.indexOf(id);
+      if (index >= 0) {
+        picks.splice(index, 1);
+      } else if (q.mode === "single") {
+        state.picks[q.id] = [id];
+      } else {
+        const limit = q.need - (ownCounts(q) ? 1 : 0);
+        if (picks.length >= limit) {
+          qAlert.textContent = q.id === "facts"
+            ? "You already have 3. Untick one, or clear your own fact."
+            : "That is the limit. Untick one, or clear your own words.";
+          return;
+        }
+        picks.push(id);
+        qAlert.textContent = "";
+      }
+      renderQuestion();
+      saveState();
+    }
+
+    function ownCounts(q) {
+      return (state.own[q.id] || "").trim().length > 0;
+    }
+
+    function selectedCount(q) {
+      return state.picks[q.id].length + (ownCounts(q) ? 1 : 0);
+    }
+
+    function refreshCount() {
+      const q = questions[step - 1];
+      if (!q || q.mode !== "multi") {
+        qCount.textContent = "";
+        return;
+      }
+      const count = selectedCount(q);
+      qCount.textContent = q.id === "facts"
+        ? "Chosen: " + count + " of 3"
+        : "Chosen: " + count + " (up to 3)";
+    }
+
+    function onNext() {
+      const q = questions[step - 1];
+      const count = selectedCount(q);
+      if (q.id === "facts" && count !== 3) {
+        qAlert.textContent = "Choose 3 things in total. A fact you type counts as one.";
+        return;
+      }
+      if (q.mode === "single" && !ownCounts(q) && state.picks[q.id].length !== 1) {
+        qAlert.textContent = "Pick one answer, or type your own.";
+        return;
+      }
+      if (q.id === "instruments" && (count < 1 || count > 3)) {
+        qAlert.textContent = "Pick at least 1 instrument, and no more than 3 choices.";
+        return;
+      }
+      show(step + 1);
+    }
+
+    function answerText(q) {
+      const own = (state.own[q.id] || "").trim();
+      const picked = q.options
+        .filter((option) => state.picks[q.id].includes(option.id))
+        .map((option) => option.text);
+      if (q.mode === "single") return own || picked[0] || "";
+      if (own) picked.push(own);
+      return picked;
+    }
+
+    function renderPrompt() {
+      const facts = answerText(questions[0]);
+      const speed = answerText(questions[1]);
+      const instruments = answerText(questions[2]);
+      const voice = answerText(questions[3]);
+      const style = answerText(questions[4]);
+      const title = (state.title || "").trim() || "Rust and the Rover";
+      const instrumentLine = instruments.join(", ");
+      const factLines = facts.map((fact, index) => (index + 1) + ". " + fact).join("\n");
+
+      document.getElementById("summary").innerHTML =
+        "<strong>Check your choices</strong><ul>" +
+        "<li>Facts:<br>" + facts.map((fact) => escapeHtml(fact)).join("<br>") + "</li>" +
+        "<li>Speed: " + escapeHtml(speed) + "</li>" +
+        "<li>Instruments: " + escapeHtml(instrumentLine) + "</li>" +
+        "<li>Voice: " + escapeHtml(voice) + "</li>" +
+        "<li>Style: " + escapeHtml(style) + "</li>" +
+        "</ul>";
+
+      document.getElementById("prompt-box").value =
+        "Write a short original song for children aged 7 to 11.\n\n" +
+        "Song name: " + title + "\n" +
+        "Style: " + style + "\n" +
+        "Speed: " + speed + "\n" +
+        "Instruments: " + instrumentLine + "\n" +
+        "Voice: " + voice + "\n\n" +
+        "The song is about corrosion. Rust on iron is the example. Use simple words a Year 4 class can sing. " +
+        "Give it a short chorus the class can join in with. Keep it about two minutes.\n\n" +
+        "Mention these three facts, and do not add any other science facts:\n" +
+        factLines + "\n\n" +
+        "Do not say that every metal rusts. Do not say rust is only dirt. Keep the song cheerful and accurate.";
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    async function copyPrompt() {
+      const box = document.getElementById("prompt-box");
+      const copied = document.getElementById("copied");
+      try {
+        await navigator.clipboard.writeText(box.value);
+        copied.textContent = "Copied. Paste it into Suno AI later.";
+        return;
+      } catch (error) {
+        box.focus();
+        box.select();
+      }
+      let copiedOk = false;
+      try {
+        copiedOk = document.execCommand("copy");
+      } catch (error) {
+        copiedOk = false;
+      }
+      copied.textContent = copiedOk
+        ? "Copied. Paste it into Suno AI later."
+        : "The prompt is selected. Copy it, then paste it into Suno AI later.";
+    }
+  </script>
+</body>
+</html>
